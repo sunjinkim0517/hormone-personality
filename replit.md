@@ -92,6 +92,11 @@ This is a full-stack personality test application that determines whether users 
 
 Changelog:
 - June 15, 2025. Initial setup
+- June 15, 2025. Added gender selection (테토남/테토녀, 에겐남/에겐녀)
+- June 15, 2025. Modernized UI with gradient backgrounds and improved layout
+- June 15, 2025. Added home button for navigation
+- June 15, 2025. Fixed sharing functionality with better error handling
+- June 15, 2025. Randomized question options to prevent bias towards first choices
 
 ## User Preferences
 
