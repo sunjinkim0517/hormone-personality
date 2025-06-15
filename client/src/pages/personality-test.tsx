@@ -30,7 +30,8 @@ export default function PersonalityTest() {
     mutationFn: async (answers: TestAnswer[]) => {
       const response = await apiRequest("POST", "/api/submit-test", {
         sessionId,
-        answers
+        answers,
+        gender: selectedGender
       });
       return response.json();
     },
@@ -88,11 +89,25 @@ export default function PersonalityTest() {
   }, [answers, currentQuestion, testState]);
 
   const startTest = () => {
+    setTestState("gender");
+  };
+
+  const startTestWithGender = (gender: string) => {
+    setSelectedGender(gender);
     setCurrentQuestion(0);
     setAnswers([]);
     setTestResults(null);
     clearProgress();
     setTestState("testing");
+  };
+
+  const goToHome = () => {
+    setTestState("welcome");
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setSelectedGender(null);
+    setTestResults(null);
+    clearProgress();
   };
 
   const selectOption = (questionId: number, optionIndex: number) => {
@@ -126,7 +141,11 @@ export default function PersonalityTest() {
   };
 
   const retakeTest = () => {
-    startTest();
+    setTestState("gender");
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setTestResults(null);
+    clearProgress();
   };
 
   const shareResults = async () => {
@@ -142,15 +161,31 @@ export default function PersonalityTest() {
           url: window.location.href,
         });
       } catch (error) {
-        console.error("Error sharing:", error);
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error("Error sharing:", error);
+          // Fallback to clipboard
+          fallbackToClipboard(shareText);
+        }
       }
     } else {
-      try {
-        await navigator.clipboard.writeText(shareText + "\n" + window.location.href);
-        alert("결과가 클립보드에 복사되었습니다!");
-      } catch (error) {
-        console.error("Error copying to clipboard:", error);
-      }
+      fallbackToClipboard(shareText);
+    }
+  };
+
+  const fallbackToClipboard = async (shareText: string) => {
+    try {
+      await navigator.clipboard.writeText(shareText + "\n" + window.location.href);
+      alert("결과가 클립보드에 복사되었습니다!");
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+      // Final fallback - create a text area and select it
+      const textArea = document.createElement('textarea');
+      textArea.value = shareText + "\n" + window.location.href;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert("결과가 클립보드에 복사되었습니다!");
     }
   };
 
@@ -167,21 +202,43 @@ export default function PersonalityTest() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">성격 호르몬 유형 테스트</h1>
-            <p className="text-gray-600">에스트로겐 vs 테스토스테론 성향 분석</p>
+      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="text-center flex-1">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                성격 호르몬 테스트
+              </h1>
+              <p className="text-sm text-gray-600">에스트로겐 vs 테스토스테론</p>
+            </div>
+            {testState !== "welcome" && (
+              <Button
+                onClick={goToHome}
+                variant="ghost"
+                size="sm"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <Home className="w-4 h-4 mr-1" />
+                홈
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-3xl mx-auto px-4 py-6">
         {testState === "welcome" && (
           <WelcomeScreen onStartTest={startTest} />
+        )}
+        
+        {testState === "gender" && (
+          <GenderSelection 
+            selectedGender={selectedGender}
+            onSelectGender={startTestWithGender}
+          />
         )}
         
         {testState === "testing" && questions && (
@@ -204,15 +261,6 @@ export default function PersonalityTest() {
           />
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-          <p className="text-gray-600 text-sm">
-            이 테스트는 심리학적 연구를 바탕으로 제작되었으며, 오락 목적으로 사용됩니다.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }

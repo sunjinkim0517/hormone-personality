@@ -265,7 +265,8 @@ export class MemStorage implements IStorage {
   async saveTestResult(result: InsertTestResult): Promise<TestResult> {
     const testResult: TestResult = {
       id: this.currentResultId++,
-      ...result
+      ...result,
+      gender: result.gender || null
     };
     this.results.set(result.sessionId, testResult);
     return testResult;

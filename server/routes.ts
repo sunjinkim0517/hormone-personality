@@ -10,7 +10,7 @@ const submitAnswersSchema = z.object({
     questionId: z.number(),
     optionIndex: z.number()
   })),
-  gender: z.string().optional()
+  gender: z.string().nullable().optional()
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -151,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resultDescription,
         resultIcon,
         resultColor,
-        gender,
+        gender: gender ?? undefined,
         analysis
       };
       
