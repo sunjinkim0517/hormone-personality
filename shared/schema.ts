@@ -44,8 +44,13 @@ export type InsertTestResult = z.infer<typeof insertTestResultSchema>;
 // Test data types
 export interface QuestionOption {
   text: string;
-  estrogen: number;
-  testosterone: number;
+  // New HPS system: H (hormone), A (action), F (focus)
+  T: number; // Testosterone tendency
+  E: number; // Estrogen tendency  
+  D: number; // Direct action
+  S: number; // Subtle action
+  I: number; // Individual focus
+  R: number; // Relational focus
 }
 
 export interface Question {
@@ -53,6 +58,7 @@ export interface Question {
   text: string;
   options: QuestionOption[];
   order: number;
+  dimension: 'H' | 'A' | 'F'; // Which dimension this question measures
 }
 
 export interface TestAnswer {
@@ -60,7 +66,46 @@ export interface TestAnswer {
   optionIndex: number;
 }
 
+// HPS (Hormone Personality System) Types
+export type HPSType = 'TDI' | 'TDR' | 'TSI' | 'TSR' | 'EDI' | 'EDR' | 'ESI' | 'ESR';
+
+export interface HPSScores {
+  T: number; // Testosterone
+  E: number; // Estrogen  
+  D: number; // Direct
+  S: number; // Subtle
+  I: number; // Individual
+  R: number; // Relational
+}
+
+export interface HPSResult {
+  type: HPSType;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  scores: HPSScores;
+  percentages: {
+    hormone: number; // T vs E percentage
+    action: number;  // D vs S percentage  
+    focus: number;   // I vs R percentage
+  };
+  characteristics: {
+    strengths: string[];
+    weaknesses: string[];
+    careers: string[];
+    celebrities: string[];
+    growthTips: string[];
+  };
+  compatibility: {
+    perfect: HPSType[];
+    good: HPSType[];
+    growth: HPSType[];
+  };
+}
+
 export interface TestScores {
+  // Legacy fields for backward compatibility
   estrogenScore: number;
   testosteroneScore: number;
   estrogenPercentage: number;
@@ -75,4 +120,6 @@ export interface TestScores {
     title: string;
     content: string;
   }>;
+  // New HPS result
+  hpsResult?: HPSResult;
 }

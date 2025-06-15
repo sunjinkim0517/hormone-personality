@@ -40,6 +40,10 @@ export default function PersonalityTest() {
       setTestState("results");
       clearProgress();
     },
+    onError: (error: Error) => {
+      console.error("Test submission error:", error);
+      // You might want to show an error message to the user here
+    }
   });
 
   // Progress management
@@ -48,6 +52,8 @@ export default function PersonalityTest() {
       currentQuestion,
       answers,
       sessionId,
+      selectedGender,
+      testState
     };
     localStorage.setItem("personalityTestProgress", JSON.stringify(progress));
   };
@@ -59,7 +65,8 @@ export default function PersonalityTest() {
         const progress = JSON.parse(saved);
         setCurrentQuestion(progress.currentQuestion || 0);
         setAnswers(progress.answers || []);
-        return true;
+        setSelectedGender(progress.selectedGender || null);
+        return progress.testState === "testing" && progress.answers && progress.answers.length > 0;
       } catch (error) {
         console.error("Error loading progress:", error);
       }
@@ -75,7 +82,7 @@ export default function PersonalityTest() {
   useEffect(() => {
     if (testState === "welcome") {
       const hasProgress = loadProgress();
-      if (hasProgress && answers.length > 0) {
+      if (hasProgress) {
         setTestState("testing");
       }
     }
@@ -86,7 +93,7 @@ export default function PersonalityTest() {
     if (testState === "testing" && answers.length > 0) {
       saveProgress();
     }
-  }, [answers, currentQuestion, testState]);
+  }, [answers, currentQuestion, testState, selectedGender]);
 
   const startTest = () => {
     setTestState("gender");
@@ -151,7 +158,21 @@ export default function PersonalityTest() {
   const shareResults = async () => {
     if (!testResults) return;
     
-    const shareText = `성격 호르몬 유형 테스트 결과: ${testResults.resultTitle}\n에스트로겐 성향: ${testResults.estrogenPercentage}%\n테스토스테론 성향: ${testResults.testosteronePercentage}%`;
+    let shareText = "";
+    
+    if (testResults.hpsResult) {
+      // New HPS format
+      shareText = `성격 호르몬 유형 테스트 결과: ${testResults.hpsResult.name} (${testResults.hpsResult.type})\n\n` +
+        `🧠 호르몬 성향: ${testResults.hpsResult.percentages.hormone}% 테스토스테론\n` +
+        `⚡ 행동 스타일: ${testResults.hpsResult.percentages.action}% 직접적\n` +
+        `👥 관심 초점: ${testResults.hpsResult.percentages.focus}% 개인적\n\n` +
+        `${testResults.hpsResult.description}`;
+    } else {
+      // Legacy format
+      shareText = `성격 호르몬 유형 테스트 결과: ${testResults.resultTitle}\n` +
+        `에스트로겐 성향: ${testResults.estrogenPercentage}%\n` +
+        `테스토스테론 성향: ${testResults.testosteronePercentage}%`;
+    }
     
     if (navigator.share) {
       try {
@@ -174,13 +195,13 @@ export default function PersonalityTest() {
 
   const fallbackToClipboard = async (shareText: string) => {
     try {
-      await navigator.clipboard.writeText(shareText + "\n" + window.location.href);
+      await navigator.clipboard.writeText(shareText + "\n\n" + window.location.href);
       alert("결과가 클립보드에 복사되었습니다!");
     } catch (error) {
       console.error("Error copying to clipboard:", error);
       // Final fallback - create a text area and select it
       const textArea = document.createElement('textarea');
-      textArea.value = shareText + "\n" + window.location.href;
+      textArea.value = shareText + "\n\n" + window.location.href;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -192,33 +213,33 @@ export default function PersonalityTest() {
   // Loading state
   if (testState === "testing" && questionsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">질문을 불러오는 중...</p>
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-6 text-purple-600" />
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">질문을 불러오는 중...</h2>
+          <p className="text-gray-500">잠시만 기다려주세요</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="text-center flex-1">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 성격 호르몬 테스트
               </h1>
-              <p className="text-sm text-gray-600">에스트로겐 vs 테스토스테론</p>
+              <p className="text-sm text-gray-600">HPS (Hormone Personality System)</p>
             </div>
             {testState !== "welcome" && (
               <Button
                 onClick={goToHome}
-                variant="ghost"
-                size="sm"
-                className="text-gray-600 hover:text-gray-900"
+       
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl"
               >
                 <Home className="w-4 h-4 mr-1" />
                 홈
@@ -229,7 +250,7 @@ export default function PersonalityTest() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-4 py-6">
         {testState === "welcome" && (
           <WelcomeScreen onStartTest={startTest} />
         )}
@@ -261,6 +282,15 @@ export default function PersonalityTest() {
           />
         )}
       </main>
+
+      {/* Footer */}
+      {testState === "welcome" && (
+        <footer className="max-w-4xl mx-auto px-4 py-8 text-center">
+          <p className="text-sm text-gray-500">
+            과학적 근거를 바탕으로 한 성격 분석 • 개인정보는 저장되지 않습니다
+          </p>
+        </footer>
+      )}
     </div>
   );
 }
