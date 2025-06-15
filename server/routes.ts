@@ -9,7 +9,8 @@ const submitAnswersSchema = z.object({
   answers: z.array(z.object({
     questionId: z.number(),
     optionIndex: z.number()
-  }))
+  })),
+  gender: z.string().optional()
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -27,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Submit test answers and get results
   app.post("/api/submit-test", async (req, res) => {
     try {
-      const { sessionId, answers } = submitAnswersSchema.parse(req.body);
+      const { sessionId, answers, gender } = submitAnswersSchema.parse(req.body);
       
       // Get all questions for scoring
       const questions = await storage.getAllQuestions();
@@ -51,23 +52,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const estrogenPercentage = Math.round((estrogenScore / totalScore) * 100);
       const testosteronePercentage = Math.round((testosteroneScore / totalScore) * 100);
       
-      // Determine result type and details
+      // Determine result type and details based on gender
       let resultType: string;
       let resultTitle: string;
       let resultDescription: string;
       let resultIcon: string;
       let resultColor: string;
       
+      const genderSuffix = gender === 'male' ? '남' : gender === 'female' ? '녀' : '';
+      
       if (estrogenPercentage > testosteronePercentage) {
         if (estrogenPercentage >= 70) {
           resultType = 'strong_estrogen';
-          resultTitle = '강한 에스트로겐 성향';
+          resultTitle = `에스트로겐 강함 (에겐${genderSuffix})`;
           resultDescription = '당신은 매우 협력적이고 공감적인 성격을 가지고 있습니다. 관계 중심적이며 감정적 지능이 높아 다른 사람들과 깊은 유대감을 형성하는 것을 중요하게 생각합니다.';
           resultIcon = 'fas fa-heart';
           resultColor = 'bg-gradient-to-br from-pink-500 to-purple-500';
         } else {
           resultType = 'moderate_estrogen';
-          resultTitle = '온건한 에스트로겐 성향';
+          resultTitle = `에스트로겐 우세 (에겐${genderSuffix})`;
           resultDescription = '당신은 협력과 경쟁의 균형을 잘 맞추는 성격입니다. 감정적 지능과 논리적 사고를 모두 활용하며, 상황에 따라 유연하게 대처합니다.';
           resultIcon = 'fas fa-balance-scale';
           resultColor = 'bg-gradient-to-br from-pink-400 to-indigo-500';
@@ -75,13 +78,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         if (testosteronePercentage >= 70) {
           resultType = 'strong_testosterone';
-          resultTitle = '강한 테스토스테론 성향';
+          resultTitle = `테스토스테론 강함 (테토${genderSuffix})`;
           resultDescription = '당신은 매우 경쟁적이고 목표 지향적인 성격을 가지고 있습니다. 도전을 즐기며 분석적 사고로 문제를 해결하는 것을 선호합니다.';
           resultIcon = 'fas fa-trophy';
           resultColor = 'bg-gradient-to-br from-blue-500 to-indigo-600';
         } else {
           resultType = 'moderate_testosterone';
-          resultTitle = '온건한 테스토스테론 성향';
+          resultTitle = `테스토스테론 우세 (테토${genderSuffix})`;
           resultDescription = '당신은 목표 달성과 인간관계의 균형을 잘 유지하는 성격입니다. 합리적 판단과 감정적 고려를 모두 중요하게 생각합니다.';
           resultIcon = 'fas fa-chess-knight';
           resultColor = 'bg-gradient-to-br from-blue-400 to-purple-500';
@@ -133,6 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         estrogenScore,
         testosteroneScore,
         resultType,
+        gender: gender || null,
         completedAt: new Date().toISOString()
       });
       
@@ -147,6 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resultDescription,
         resultIcon,
         resultColor,
+        gender,
         analysis
       };
       

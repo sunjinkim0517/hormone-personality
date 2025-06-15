@@ -22,6 +22,7 @@ export const testResults = pgTable("test_results", {
   estrogenScore: integer("estrogen_score").notNull(),
   testosteroneScore: integer("testosterone_score").notNull(),
   resultType: text("result_type").notNull(),
+  gender: text("gender"),
   completedAt: text("completed_at").notNull(),
 });
 
@@ -69,6 +70,7 @@ export interface TestScores {
   resultDescription: string;
   resultIcon: string;
   resultColor: string;
+  gender?: string;
   analysis: Array<{
     title: string;
     content: string;

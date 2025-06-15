@@ -2,17 +2,20 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import WelcomeScreen from "@/components/test/welcome-screen";
+import GenderSelection from "@/components/test/gender-selection";
 import TestScreen from "@/components/test/test-screen";
 import ResultsScreen from "@/components/test/results-screen";
 import type { Question, TestAnswer, TestScores } from "@shared/schema";
-import { Loader2 } from "lucide-react";
+import { Loader2, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-type TestState = "welcome" | "testing" | "results";
+type TestState = "welcome" | "gender" | "testing" | "results";
 
 export default function PersonalityTest() {
   const [testState, setTestState] = useState<TestState>("welcome");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<TestAnswer[]>([]);
+  const [selectedGender, setSelectedGender] = useState<string | null>(null);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [testResults, setTestResults] = useState<TestScores | null>(null);
 
