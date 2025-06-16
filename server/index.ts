@@ -48,10 +48,11 @@ app.use((req, res, next) => {
       res.status(status).json({ message });
     });
 
-    // Environment-based setup
     if (process.env.NODE_ENV === "production") {
+      console.log("✅ Production mode: serving static files");
       serveStatic(app);
     } else {
+      console.log("🛠️ Development mode: using Vite dev server");
       await setupVite(app, server);
     }
 

@@ -14,8 +14,8 @@ const submitAnswersSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoints
-  app.get("/", (req, res) => {
+  // Health check endpoint (별도 경로로 이동)
+  app.get("/health", (req, res) => {
     res.status(200).json({ 
       status: "healthy", 
       timestamp: new Date().toISOString(),
@@ -23,7 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/health", (req, res) => {
+  app.get("/api/status", (req, res) => {
     res.status(200).json({ status: "ok" });
   });
 
