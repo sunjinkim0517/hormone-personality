@@ -14,6 +14,19 @@ const submitAnswersSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoints
+  app.get("/", (req, res) => {
+    res.status(200).json({ 
+      status: "healthy", 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development'
+    });
+  });
+
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   // Get all test questions
   app.get("/api/questions", async (_req, res) => {
     try {
