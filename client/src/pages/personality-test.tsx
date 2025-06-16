@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import WelcomeScreen from "@/components/test/welcome-screen";
 import GenderSelection from "@/components/test/gender-selection";
 import TestScreen from "@/components/test/test-screen";
@@ -18,33 +16,64 @@ export default function PersonalityTest() {
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [testResults, setTestResults] = useState<TestScores | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch questions
-  const { data: questions, isLoading: questionsLoading } = useQuery<Question[]>({
-    queryKey: ["/api/questions"],
-    enabled: testState === "testing",
-  });
+  const fetchQuestions = async () => {
+    if (testState !== "testing") return;
+    
+    setQuestionsLoading(true);
+    try {
+      const response = await fetch("/api/questions");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setQuestions(data);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+    } finally {
+      setQuestionsLoading(false);
+    }
+  };
 
-  // Submit test mutation
-  const submitTestMutation = useMutation({
-    mutationFn: async (answers: TestAnswer[]) => {
-      const response = await apiRequest("POST", "/api/submit-test", {
-        sessionId,
-        answers,
-        gender: selectedGender
+  useEffect(() => {
+    fetchQuestions();
+  }, [testState]);
+
+  // Submit test
+  const submitTest = async (answers: TestAnswer[]) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/submit-test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId,
+          answers,
+          gender: selectedGender
+        }),
       });
-      return response.json();
-    },
-    onSuccess: (results: TestScores) => {
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const results: TestScores = await response.json();
       setTestResults(results);
       setTestState("results");
       clearProgress();
-    },
-    onError: (error: Error) => {
+    } catch (error) {
       console.error("Test submission error:", error);
-      // You might want to show an error message to the user here
+      alert("테스트 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
     }
-  });
+  };
 
   // Progress management
   const saveProgress = () => {
@@ -131,13 +160,13 @@ export default function PersonalityTest() {
   };
 
   const nextQuestion = () => {
-    if (!questions) return;
+    if (!questions.length) return;
     
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       // Submit test
-      submitTestMutation.mutate(answers);
+      submitTest(answers);
     }
   };
 
@@ -162,16 +191,18 @@ export default function PersonalityTest() {
     
     if (testResults.hpsResult) {
       // New HPS format
-      shareText = `성격 호르몬 유형 테스트 결과: ${testResults.hpsResult.name} (${testResults.hpsResult.type})\n\n` +
-        `🧠 호르몬 성향: ${testResults.hpsResult.percentages.hormone}% 테스토스테론\n` +
-        `⚡ 행동 스타일: ${testResults.hpsResult.percentages.action}% 직접적\n` +
-        `👥 관심 초점: ${testResults.hpsResult.percentages.focus}% 개인적\n\n` +
-        `${testResults.hpsResult.description}`;
+      shareText = `성격 호르몬 유형 테스트 결과: ${testResults.hpsResult.name} (${testResults.hpsResult.type})
+
+호르몬 성향: ${testResults.hpsResult.percentages.hormone}% 테스토스테론
+행동 스타일: ${testResults.hpsResult.percentages.action}% 직접적
+관심 초점: ${testResults.hpsResult.percentages.focus}% 개인적
+
+${testResults.hpsResult.description}`;
     } else {
       // Legacy format
-      shareText = `성격 호르몬 유형 테스트 결과: ${testResults.resultTitle}\n` +
-        `에스트로겐 성향: ${testResults.estrogenPercentage}%\n` +
-        `테스토스테론 성향: ${testResults.testosteronePercentage}%`;
+      shareText = `성격 호르몬 유형 테스트 결과: ${testResults.resultTitle}
+에스트로겐 성향: ${testResults.estrogenPercentage}%
+테스토스테론 성향: ${testResults.testosteronePercentage}%`;
     }
     
     if (navigator.share) {
@@ -184,7 +215,6 @@ export default function PersonalityTest() {
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {
           console.error("Error sharing:", error);
-          // Fallback to clipboard
           fallbackToClipboard(shareText);
         }
       }
@@ -199,7 +229,6 @@ export default function PersonalityTest() {
       alert("결과가 클립보드에 복사되었습니다!");
     } catch (error) {
       console.error("Error copying to clipboard:", error);
-      // Final fallback - create a text area and select it
       const textArea = document.createElement('textarea');
       textArea.value = shareText + "\n\n" + window.location.href;
       document.body.appendChild(textArea);
@@ -238,7 +267,8 @@ export default function PersonalityTest() {
             {testState !== "welcome" && (
               <Button
                 onClick={goToHome}
-       
+                variant="ghost"
+                size="sm"
                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl"
               >
                 <Home className="w-4 h-4 mr-1" />
@@ -262,7 +292,7 @@ export default function PersonalityTest() {
           />
         )}
         
-        {testState === "testing" && questions && (
+        {testState === "testing" && questions.length > 0 && (
           <TestScreen
             questions={questions}
             currentQuestion={currentQuestion}
@@ -270,7 +300,7 @@ export default function PersonalityTest() {
             onSelectOption={selectOption}
             onNextQuestion={nextQuestion}
             onPreviousQuestion={previousQuestion}
-            isSubmitting={submitTestMutation.isPending}
+            isSubmitting={isSubmitting}
           />
         )}
         

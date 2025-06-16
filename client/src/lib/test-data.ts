@@ -20,19 +20,9 @@ export const getTypeColor = (type: HPSType): string => {
   return colorMap[type] || 'bg-gradient-to-br from-purple-600 to-pink-600';
 };
 
-// HPS 유형별 아이콘 매핑
+// HPS 유형별 아이콘 매핑 (이모지 제거)
 export const getTypeIcon = (type: HPSType): string => {
-  const iconMap: Record<HPSType, string> = {
-    'TDI': '👑',
-    'TDR': '🔥',
-    'TSI': '😎', 
-    'TSR': '🛡️',
-    'EDI': '✨',
-    'EDR': '🌟',
-    'ESI': '🌙',
-    'ESR': '🕊️'
-  };
-  return iconMap[type] || '⭐';
+  return type; // 단순히 타입 문자열 반환
 };
 
 // Legacy calculation function for backward compatibility

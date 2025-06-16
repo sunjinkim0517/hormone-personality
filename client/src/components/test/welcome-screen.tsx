@@ -83,6 +83,7 @@ export default function WelcomeScreen({ onStartTest }: WelcomeScreenProps) {
               </div>
             </div>
 
+            {/* 8 Types Preview */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">8가지 성격 유형</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -125,7 +126,7 @@ export default function WelcomeScreen({ onStartTest }: WelcomeScreenProps) {
             <div className="text-center">
               <Button 
                 onClick={onStartTest}
-                
+                size="lg"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-6 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-lg"
               >
                 <Sparkles className="w-6 h-6 mr-3" />

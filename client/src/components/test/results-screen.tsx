@@ -47,7 +47,7 @@ export default function ResultsScreen({ results, onRetakeTest, onShareResults }:
                   alt={hpsResult.name}
                   className="w-24 h-24 object-cover rounded-full"
                   onError={(e) => {
-                    // Fallback to icon if image fails to load
+                    // Fallback to type text if image fails to load
                     e.currentTarget.style.display = 'none';
                     e.currentTarget.nextElementSibling?.classList.remove('hidden');
                   }}
@@ -299,8 +299,8 @@ export default function ResultsScreen({ results, onRetakeTest, onShareResults }:
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button
           onClick={onRetakeTest}
-     
-         
+          variant="outline"
+          size="lg"
           className="px-8 py-4 border-2 border-primary text-primary hover:bg-primary/5 rounded-2xl"
         >
           <RotateCcw className="w-5 h-5 mr-2" />
@@ -308,7 +308,7 @@ export default function ResultsScreen({ results, onRetakeTest, onShareResults }:
         </Button>
         <Button
           onClick={onShareResults}
-         
+          size="lg"
           className={`px-8 py-4 text-white hover:opacity-90 rounded-2xl ${typeColor}`}
         >
           <Share2 className="w-5 h-5 mr-2" />
@@ -346,15 +346,15 @@ function LegacyResultsView({ results, onRetakeTest, onShareResults }: ResultsScr
   const getResultGradient = () => {
     switch (results.resultType) {
       case 'strong_estrogen':
-        return 'estrogen-gradient';
+        return 'bg-gradient-to-br from-pink-500 to-purple-500';
       case 'moderate_estrogen':
         return 'bg-gradient-to-br from-pink-400 to-indigo-500';
       case 'strong_testosterone':
-        return 'testosterone-gradient';
+        return 'bg-gradient-to-br from-blue-500 to-indigo-500';
       case 'moderate_testosterone':
         return 'bg-gradient-to-br from-blue-400 to-purple-500';
       default:
-        return 'test-gradient';
+        return 'bg-gradient-to-br from-purple-500 to-pink-500';
     }
   };
 
@@ -417,7 +417,7 @@ function LegacyResultsView({ results, onRetakeTest, onShareResults }: ResultsScr
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
             onClick={onRetakeTest}
-          
+            variant="outline"
             className="px-8 py-3 border-2 border-primary text-primary hover:bg-primary/5"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
@@ -425,7 +425,7 @@ function LegacyResultsView({ results, onRetakeTest, onShareResults }: ResultsScr
           </Button>
           <Button
             onClick={onShareResults}
-            className="px-8 py-3 test-gradient text-white hover:opacity-90"
+            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90"
           >
             <Share2 className="w-4 h-4 mr-2" />
             결과 공유하기

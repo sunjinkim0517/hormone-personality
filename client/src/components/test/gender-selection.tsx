@@ -13,7 +13,6 @@ export default function GenderSelection({ selectedGender, onSelectGender }: Gend
     {
       id: 'male',
       label: '남성',
-      icon: '👨',
       description: '테토남 / 에겐남 유형으로 분석',
       gradient: 'from-blue-500 to-indigo-600',
       bgGradient: 'from-blue-50 to-indigo-50',
@@ -22,7 +21,6 @@ export default function GenderSelection({ selectedGender, onSelectGender }: Gend
     {
       id: 'female',
       label: '여성',
-      icon: '👩',
       description: '테토녀 / 에겐녀 유형으로 분석',
       gradient: 'from-pink-500 to-purple-600',
       bgGradient: 'from-pink-50 to-purple-50',
@@ -31,7 +29,6 @@ export default function GenderSelection({ selectedGender, onSelectGender }: Gend
     {
       id: 'other',
       label: '기타',
-      icon: '👤',
       description: '일반적인 성격 유형으로 분석',
       gradient: 'from-gray-500 to-slate-600',
       bgGradient: 'from-gray-50 to-slate-50',
@@ -78,8 +75,8 @@ export default function GenderSelection({ selectedGender, onSelectGender }: Gend
                     <CardContent className="p-0">
                       <div className={`bg-gradient-to-br ${option.bgGradient} p-6`}>
                         <div className="flex items-center gap-4">
-                          <div className={`w-16 h-16 bg-gradient-to-br ${option.gradient} rounded-2xl flex items-center justify-center text-2xl shadow-lg`}>
-                            {option.icon}
+                          <div className={`w-16 h-16 bg-gradient-to-br ${option.gradient} rounded-2xl flex items-center justify-center shadow-lg`}>
+                            <User className="text-white w-8 h-8" />
                           </div>
                           <div className="text-left flex-1">
                             <h3 className="text-xl font-bold text-gray-900 mb-1">
@@ -127,7 +124,7 @@ export default function GenderSelection({ selectedGender, onSelectGender }: Gend
         <Card className="bg-white/60 backdrop-blur-sm border border-gray-200/50">
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-              <span className="text-white text-xl">🧠</span>
+              <Users className="text-white w-6 h-6" />
             </div>
             <h3 className="font-bold text-gray-900 mb-2">과학적 근거</h3>
             <p className="text-sm text-gray-600">
@@ -139,7 +136,7 @@ export default function GenderSelection({ selectedGender, onSelectGender }: Gend
         <Card className="bg-white/60 backdrop-blur-sm border border-gray-200/50">
           <CardContent className="p-6 text-center">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-              <span className="text-white text-xl">🔒</span>
+              <Sparkles className="text-white w-6 h-6" />
             </div>
             <h3 className="font-bold text-gray-900 mb-2">개인정보 보호</h3>
             <p className="text-sm text-gray-600">

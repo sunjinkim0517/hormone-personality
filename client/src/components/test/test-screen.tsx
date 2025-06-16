@@ -31,6 +31,7 @@ export default function TestScreen({
   const isLastQuestion = currentQuestion === questions.length - 1;
   const canProceed = currentAnswer !== undefined;
 
+  // Get dimension info for visual styling
   const getDimensionInfo = (dimension: 'H' | 'A' | 'F') => {
     switch (dimension) {
       case 'H':
@@ -153,8 +154,8 @@ export default function TestScreen({
         <Button
           onClick={onPreviousQuestion}
           disabled={currentQuestion === 0}
-          
-
+          variant="ghost"
+          size="lg"
           className="px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50"
         >
           <ChevronLeft className="w-5 h-5 mr-2" />
@@ -180,7 +181,7 @@ export default function TestScreen({
         <Button
           onClick={onNextQuestion}
           disabled={!canProceed || isSubmitting}
-         
+          size="lg"
           className={cn(
             "px-8 py-3 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl",
             `bg-gradient-to-r ${dimensionInfo.color} hover:opacity-90 disabled:opacity-50`
